@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SmartFarm IoT - Analytics Dashboard</title>
+    <!-- Google Fonts: Outfit & Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
+    <!-- FontAwesome for Premium Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- ApexCharts CDN for Premium Interactive Charts -->
+    <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+    <!-- Custom Style System Sheet -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+</head>
+
+<body>
+    <div class="dashboard-container">
+        <!-- Sidebar Navigation Component -->
+        <aside class="sidebar">
+            <div class="sidebar-brand">
+                <div class="brand-logo">
+                    <i class="fa-solid fa-leaf text-gradient"></i>
+                </div>
+                <div class="brand-info">
+                    <h2>AGROMIND 2.0</h2>
+                    <span>IoT Monitoring</span>
+                </div>
+            </div>
+
+            <nav class="sidebar-menu">
+                <ul>
+                    <li class="active">
+                        <a href="#overview">
+                            <i class="fa-solid fa-chart-line"></i>
+                            <span>Overview</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#devices">
+                            <i class="fa-solid fa-microchip"></i>
+                            <span>Devices</span>
+                            <span class="badge badge-success">Online</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#alerts" id="alerts-nav">
+                            <i class="fa-solid fa-triangle-exclamation"></i>
+                            <span>Alerts</span>
+                            <span class="badge badge-danger" id="alerts-count">0</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#analytics">
+                            <i class="fa-solid fa-magnifying-glass-chart"></i>
+                            <span>Analytics</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#reports">
+                            <i class="fa-solid fa-file-invoice-dollar"></i>
+                            <span>Reports</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#settings-section">
+                            <i class="fa-solid fa-sliders"></i>
+                            <span>Settings</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#bca" id="alerts-nav">
+                            <i class="fa-solid "></i>
+                            <span>BCA</span>
+                            <span id="alerts-count"></span>
+                        </a>
+                    </li>
+                    <li class="">
+                        <a href="#login">
+                            <i class=""></i>
+                            <span>login</span>
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+
+            <div class="sidebar-footer">
+                <a href="#logout" class="btn-logout">
+                    <i class="fa-solid fa-right-from-bracket"></i>
+                    <span>Log Out</span>
+                </a>
+            </div>
+        </aside>
+
+        <!-- Main Content Area Component -->
+        <main class="main-content">
+
+            <!-- Top Header Component -->
+            <header class="main-header">
+                <div class="header-search">
+                    <i class="fa-solid fa-magnifying-glass"></i>
+                    <input type="text" placeholder="Search farm analytics, device logs, telemetry trends...">
+                </div>
+                <div class="header-profile">
+                    <div class="nodemcu-status" id="nodemcu-status">
+                        <div class="status-indicator-dot online"></div>
+                        <span class="status-text">NodeMCU: Connecting...</span>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Dashboard Analytics Subtitle & Title -->
+            <section class="dashboard-banner" id="overview">
+                <div class="banner-title">
+                    <h1>Analytics Dashboard</h1>
+                    <p>Comprehensive operational analytics and smart-irrigation automation insights.</p>
+                </div>
+                <div class="banner-actions">
+                    <button class="btn btn-primary" onclick="window.location.reload()"><i
+                            class="fa-solid fa-rotate"></i> Sync Live</button>
+                </div>
+            </section>
+
+            <!-- Top Cards / Metrics Grid Component -->
+            <section class="metrics-grid">
+                <!-- Card 1: Ambient Conditions -->
+                <div class="metric-card">
+                    <div class="card-header">
+                        <span>Environment Readings</span>
+                        <i class="fa-solid fa-temperature-half card-icon icon-temp"></i>
+                    </div>
+                    <div class="card-value" id="card-temp-humidity">--°C / --%</div>
+                    <div class="card-footer">
+                        <span class="status-up"><i class="fa-solid fa-droplet"></i> <span id="humidity-lbl">--%</span>
+                            Humidity</span>
+                        <span class="footer-note">Ambient DHT22 Sensor</span>
+                    </div>
+                </div>
+
+                <!-- Card 2: Soil Moisture Status -->
+                <div class="metric-card">
+                    <div class="card-header">
+                        <span>Soil Moisture Level</span>
+                        <i class="fa-solid fa-seedling card-icon icon-soil"></i>
+                    </div>
+                    <div class="card-value" id="card-soil-val">---</div>
+                    <div class="card-footer">
+                        <span id="soil-status-badge" class="status-neutral">Checking...</span>
+                        <span class="footer-note">Threshold: <strong id="soil-threshold-lbl">400</strong></span>
+                    </div>
+                </div>
+
+                <!-- Card 3: Rain Sensor Status -->
+                <div class="metric-card">
+                    <div class="card-header">
+                        <span>Rain Sensor</span>
+                        <i class="fa-solid fa-cloud-showers-heavy card-icon icon-rain"></i>
+                    </div>
+                    <div class="card-value" id="card-rain-state">--</div>
+                    <div class="card-footer">
+                        <span id="rain-detail-badge" class="status-neutral"><i class="fa-solid fa-cloud"></i>
+                            Checking...</span>
+                        <span class="footer-note">Digital Rain Detector</span>
+                    </div>
+                </div>
+
+                <!-- Card 4: Float / Reservoir Level Status -->
+                <div class="metric-card">
+                    <div class="card-header">
+                        <span>Reservoir Level</span>
+                        <i class="fa-solid fa-water card-icon icon-pump-1"></i>
+                    </div>
+                    <div class="card-value" id="card-reservoir-state">--</div>
+                    <div class="card-footer">
+                        <span id="reservoir-status-badge" class="status-up"><i class="fa-solid fa-gauge-high"></i>
+                            Checking...</span>
+                        <span class="footer-note">Float Switch Sensor</span>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Middle Columns (Chart + M1/M2 Status + Logs) -->
+            <section class="content-row row-middle">
+                <!-- Trend Line/Area Chart Panel -->
+                <div class="chart-panel grid-col-8" id="analytics">
+                    <div class="panel-header">
+                        <h3>Environmental & Soil Moisture Trend</h3>
+                        <div class="panel-controls">
+                            <span class="badge badge-indigo">Live Telemetry</span>
+                            <span class="sync-indicator pulse-dot"></span>
+                        </div>
+                    </div>
+                    <div class="panel-body">
+                        <div id="trend-chart" style="min-height: 350px;"></div>
+                    </div>
+                </div>
+
+                <!-- M1 & M2 Pump Status Side Panels -->
+                <div class="pump-status-column grid-col-4">
+                    <!-- Reservoir Pump (M1) Status -->
+                    <div class="chart-panel pump-mini-card">
+                        <div class="panel-header">
+                            <h3><i class="fa-solid fa-faucet-drip" style="color: var(--color-cyan); margin-right: 0.5rem;"></i> Reservoir Pump (M1)</h3>
+                            <span class="badge badge-dark" id="m1-mode-badge">Auto</span>
+                        </div>
+                        <div class="panel-body pump-mini-body">
+                            <div class="pump-visual">
+                                <div class="pump-indicator" id="m1-indicator">
+                                    <i class="fa-solid fa-gear"></i>
+                                </div>
+                                <div class="pump-info">
+                                    <div class="pump-state-label" id="card-pump-1-state">--</div>
+                                    <div class="pump-sub-label" id="m1-sub-label">Float Sensor Controlled</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Irrigation Pump (M2) Status -->
+                    <div class="chart-panel pump-mini-card">
+                        <div class="panel-header">
+                            <h3><i class="fa-solid fa-shower" style="color: var(--color-amber); margin-right: 0.5rem;"></i> Irrigation Pump (M2)</h3>
+                            <span class="badge badge-dark" id="m2-mode-badge">Auto</span>
+                        </div>
+                        <div class="panel-body pump-mini-body">
+                            <div class="pump-visual">
+                                <div class="pump-indicator" id="m2-indicator">
+                                    <i class="fa-solid fa-gear"></i>
+                                </div>
+                                <div class="pump-info">
+                                    <div class="pump-state-label" id="card-pump-2-state">--</div>
+                                    <div class="pump-sub-label" id="m2-sub-label">Soil Moisture Controlled</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Logs & Alert Board Panel -->
+            <section class="content-row row-alerts">
+                <div class="chart-panel grid-col-12" id="alerts">
+                    <div class="panel-header">
+                        <h3>Active Farm Alerts</h3>
+                        <span class="badge badge-dark" id="logs-count">0 Records</span>
+                    </div>
+                    <div class="panel-body list-body">
+                        <div class="alerts-container" id="alerts-list">
+                            <!-- Populated Dynamically by JavaScript -->
+                            <div class="empty-alerts">
+                                <i class="fa-solid fa-shield-halved"></i>
+                                <p>System operating normally. No alerts triggered.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Settings Panel Section -->
+<section id="bca" class="content-row">
+<div class="">
+<div class="panel-header">
+<h3>BCA</h3>
+</div>
+<div class="panel-body">
+HI I am BCA student <br>
+</div>
+<section id="login" class="content-row">
+    <div class="panel-header">
+    <h4>login </div></section></h4><br>
+    <label for="name">Enter Text:</label>
+<input type="text" id="name" name="name">
+<br><label for="name">Enter password:</label>
+<form>
+ 
+  <input type="password" id="password" name="password" required minlength="8">
+  <button type="submit">Submit</button>
+</form>
+<div class="#login">
+<div class="panel-header">
+</div>
+</div>
+</section>
+            <section id="settings-section" class="content-row row-settings">
+                <div class="chart-panel grid-col-12">
+                    <div class="panel-header">
+                        <h3><i class="fa-solid fa-gears text-gradient"></i> Dynamic Automation Controls</h3>
+                        <span class="badge badge-indigo">Settings Synced with NodeMCU</span>
+                    </div>
+                    <div class="panel-body">
+                        <div class="settings-grid">
+                            <div class="settings-card">
+                                <h4>Soil Dryness Threshold Range</h4>
+                                <p>Set the analog ADC limit below which irrigation Pump 2 will automatically engage.
+                                    Lower values correspond to drier soil.</p>
+                                <div class="slider-control">
+                                    <input type="range" id="soil-threshold-input" min="100" max="900" value="400"
+                                        step="10">
+                                    <div class="slider-values">
+                                        <span>Drier (100)</span>
+                                        <span class="current-slider-val" id="current-threshold-val">400</span>
+                                        <span>Wetter (900)</span>
+                                    </div>
+                                </div>
+                                <button class="btn btn-indigo" id="save-threshold-btn">
+                                    <i class="fa-solid fa-floppy-disk"></i> Update Threshold Limit
+                                </button>
+                            </div>
+
+                            <div class="settings-card card-instructions">
+                                <h4>NodeMCU Physical PIN Connections</h4>
+                                <div class="connection-pins">
+                                    <div class="pin-badge"><span>D1 (GPIO5)</span> Motor 1 Pump</div>
+                                    <div class="pin-badge"><span>D2 (GPIO4)</span> Motor 2 Pump</div>
+                                    <div class="pin-badge"><span>D5 (GPIO14)</span> Float Switch</div>
+                                    <div class="pin-badge"><span>D6 (GPIO12)</span> Rain Sensor</div>
+                                    <div class="pin-badge"><span>D7 (GPIO13)</span> DHT22 Sensor</div>
+                                    <div class="pin-badge"><span>A0 (ADC0)</span> Analog Soil Sensor</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Connected Devices & Sensor Pins Section -->
+            <section id="devices" class="content-row">
+                <div class="chart-panel grid-col-12">
+                    <div class="panel-header">
+                        <h3><i class="fa-solid fa-microchip text-gradient"></i> Connected IoT Devices & Sensors</h3>
+                        <span class="badge badge-success">Online / NodeMCU ESP8266</span>
+                    </div>
+                    <div class="panel-body">
+                        <div class="settings-grid">
+                            <div class="settings-card">
+                                <h4>Used Sensors & Input Pins</h4>
+                                <p>Real-time analog and digital monitoring elements connected to the NodeMCU:</p>
+                                <div class="connection-pins">
+                                    <div class="pin-badge"><span>A0 (ADC0)</span> <strong>Soil Moisture Sensor</strong> - Analog hygrometer probe</div>
+                                    <div class="pin-badge"><span>D7 (GPIO13)</span> <strong>DHT22 Sensor</strong> - Digital Temp & Air Humidity</div>
+                                    <div class="pin-badge"><span>D6 (GPIO12)</span> <strong>Rain Sensor</strong> - Raining switch detector</div>
+                                    <div class="pin-badge"><span>D5 (GPIO14)</span> <strong>Float Switch</strong> - Reservoir liquid level sensor</div>
+                                </div>
+                            </div>
+                            <div class="settings-card">
+                                <h4>Control Actuators & Output Pins</h4>
+                                <p>Automated output modules triggered directly by the system controllers:</p>
+                                <div class="connection-pins">
+                                    <div class="pin-badge"><span>D1 (GPIO5)</span> <strong>Motor 1 Relay</strong> - Reservoir Pump (Active-Low)</div>
+                                    <div class="pin-badge"><span>D2 (GPIO4)</span> <strong>Motor 2 Relay</strong> - Irrigation Pump (Active-Low)</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Bottom Rows (Radar diagnostics + Bar chart + Donut) -->
+            <section class="content-row row-bottom">
+                <!-- Radar Performance Panel -->
+                <div class="chart-panel grid-col-4">
+                    <div class="panel-header">
+                        <h3>Overall Diagnostics</h3>
+                    </div>
+                    <div class="panel-body">
+                        <div id="radar-chart" style="min-height: 250px;"></div>
+                    </div>
+                </div>
+
+                <!-- Run Times Bar Chart Panel -->
+                <div class="chart-panel grid-col-4">
+                    <div class="panel-header">
+                        <h3>Pump Running Profiles</h3>
+                    </div>
+                    <div class="panel-body">
+                        <div id="bar-chart" style="min-height: 250px;"></div>
+                    </div>
+                </div>
+
+                <!-- Water Storage / Volume Tank Analysis -->
+                <div class="chart-panel grid-col-4">
+                    <div class="panel-header">
+                        <h3>Reservoir Tank Level</h3>
+                    </div>
+                    <div class="panel-body radial-center">
+                        <div class="tank-animation-container">
+                            <div class="tank-body">
+                                <div class="tank-water" id="tank-water"></div>
+                                <div class="tank-overlay"></div>
+                            </div>
+                            <div class="tank-indicator" id="tank-indicator-icon">
+                                <i class="fa-solid fa-circle-check"></i>
+                            </div>
+                        </div>
+                        <div class="tank-status-label" id="tank-vol-txt">Tank Status: Loading...</div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Live Telemetry Log Grid Table -->
+            <section class="content-row row-table">
+                <div class="chart-panel grid-col-12">
+                    <div class="panel-header">
+                        <h3>Real-time Telemetry Data Streams</h3>
+                        <span class="badge badge-dark">Last 10 Network Cycles</span>
+                    </div>
+                    <div class="panel-body table-body">
+                        <table class="telemetry-table">
+                            <thead>
+                                <tr>
+                                    <th>Timestamp</th>
+                                    <th>Temp (°C)</th>
+                                    <th>Humidity (%)</th>
+                                    <th>Soil Value</th>
+                                    <th>Rain State</th>
+                                    <th>Float Switch</th>
+                                    <th>Reservoir (M1)</th>
+                                    <th>Irrigation (M2)</th>
+                                </tr>
+                            </thead>
+                            <tbody id="telemetry-table-body">
+                                <tr>
+                                    <td colspan="8" class="text-center">Awaiting data packages from ESP8266 IoT
+                                        Station...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Database Reports Export Section -->
+            <section id="reports" class="content-row">
+                <div class="chart-panel grid-col-12">
+                    <div class="panel-header">
+                        <h3><i class="fa-solid fa-file-invoice-dollar text-gradient"></i> Telemetry Database Reports</h3>
+                        <span class="badge badge-indigo">Data Export</span>
+                    </div>
+                    <div class="panel-body">
+                        <div class="settings-card">
+                            <h4>Export Historical Telemetry Database</h4>
+                            <p>Download the full system database records as a standardized CSV spreadsheet. This file includes all past readings for temperature, humidity, soil moisture, pump events, and rain sensor records.</p>
+                            <a href="/api/reports/download" class="btn btn-indigo" style="margin-top: 1rem;">
+                                <i class="fa-solid fa-file-arrow-down"></i> Download Telemetry CSV Report
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Script imports -->
+    <script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
+</body>
+
+</html>
